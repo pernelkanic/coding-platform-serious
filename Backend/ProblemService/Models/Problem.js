@@ -1,5 +1,4 @@
-var mongoose = require('mongoose');
-
+import mongoose from "mongoose";
 const Schema = mongoose.Schema
 
 const ProblemSchema = new Schema({
@@ -14,12 +13,11 @@ description:{
 examples:{
     type:String,
     required:true
+
 },
 
 },{timestamps:true}
 )
 
-const problems = mongoose.model('problems',ProblemSchema);
-module.exports={
-    problems
-}
+const problem =  mongoose.model('problems',ProblemSchema);
+export default problem;

@@ -7,8 +7,7 @@ const submissionSchema = new Schema(
 		user: {
 			
                 clerkUserId: { type: String, unique: true, required: true },
-                firstName: String,
-                lastName: String,
+           
               
 		},
 		code: {
