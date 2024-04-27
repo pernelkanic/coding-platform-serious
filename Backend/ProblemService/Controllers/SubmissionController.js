@@ -1,5 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import rabbit from '../Helpers/rabbit.js';
+import redisClient from '../Helpers/redis.js';
 export const runCode= async(req,res)=>{
     try{
     const {code , language} = req.body;
@@ -25,23 +26,25 @@ export const runCode= async(req,res)=>{
     await rabbit.sendToQueue('codequeue' , data);
    
     console.log("sent to the queue chill mf!!");
-    await rabbit.consume("codequeue", async(msg  )=>{
-        if(msg !=null){
-            
-            console.log(JSON.parse(msg.content.toString()))
-        }
-})
+ 
     const respforredis = {
         status :'pending',
         
     }
-    // await redisclient.set(id, JSON.stringify(respforredis));
+    await redisClient.set(id, JSON.stringify(respforredis));
+    setTimeout(() => {
+        console.log("Delayed for 3second.");
+      }, "3000");
+    const res = await redisClient.get(id );
+    console.log(res);
+    
+
     return res.status(200).json({
         success :true,
         message:'code execution is pending',
         requestId:id
     })
-
+    
 
 }
 catch(e){
