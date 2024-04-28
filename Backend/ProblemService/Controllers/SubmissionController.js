@@ -35,8 +35,7 @@ export const runCode= async(req,res)=>{
     setTimeout(() => {
         console.log("Delayed for 3second.");
       }, "3000");
-    const res = await redisClient.get(id );
-    console.log(res);
+
     
 
     return res.status(200).json({
@@ -58,8 +57,8 @@ catch(e){
 export const getSubmissionById = async(req,res)=>{
 try{
     const {id}  = req.params;
-    const result = await redisclient.get(id);
-    console.log(res);
+    const result = await redisClient.get(id);
+    console.log(result);
     if(res == null){
         return res.status(404).json({
             success:false,
@@ -68,7 +67,7 @@ try{
     }
     return res.status(200).json({
         success :true,
-        message:res
+        message:result
       
     })  
 }

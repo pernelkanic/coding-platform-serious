@@ -1,6 +1,5 @@
 
 import { exec } from "child_process";
-import { error } from "console";
 import { promises as fs } from "fs";
 import { v4 as uuid } from "uuid";
 class ActualRunner{
@@ -31,6 +30,7 @@ class ActualRunner{
     }
     getLangDetails(language){
         const details = this.LANGUAGES[language];
+        console.log("the details of the image is " , details.dockerImage);
         if(!details){
             throw new Error("Unsupported Error");
         }
@@ -38,10 +38,10 @@ class ActualRunner{
     }
     execCommand(dockerCommand){
         return new Promise((resolve, reject)=>{
-            exec(dockerCommand , (stdout , stderr)=>{
+            exec(dockerCommand , (error , stdout , stderr)=>{
                 if(error){
                     reject({
-                        error:true,
+                        error:error.message,
                         message:"unexpected system error fuck you !",
 
                     })
@@ -54,9 +54,11 @@ class ActualRunner{
     async  runnerCode(code , language){
         const {dockerImage, command} = this.getLangDetails(language);
         const filename = `${uuid()}.${language}`
-        try{    
+        try{
             await fs.writeFile(filename, code);
-            const dockerCommand = `docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}" `;
+            
+            const dockerCommand = `docker run  -v  cd:/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}" `;
+          
             const{stdout, stderr} = await this.execCommand(dockerCommand);
             return {stdout, stderr};
 

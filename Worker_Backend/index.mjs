@@ -10,7 +10,8 @@ const workerRun = async()=>{
         console.log("the worker is on");
         await rabbit.connect();
         
-  
+        const { channel } = rabbit
+		await rabbit.channel.assertQueue('codequeue')
         await rabbit.consume('codequeue' , async(msg ,message)=>{
             try{
                 console.log("consuming message");
@@ -19,8 +20,10 @@ const workerRun = async()=>{
                     return;
                 }
                 const{id , code , language}= message;
-                const {stdout , stderr} = await runner.runcode(id , code ,language);
+                const {stdout , stderr} = await runner.runnerCode( code ,language);
                 const result = stdout? stdout : stderr;
+                console.log(stdout);
+                console.log(stderr);
                 const output = {
                     result,
 					status: 'completed'
