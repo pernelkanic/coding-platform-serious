@@ -1,1 +1,0 @@
-print('the world is noe')

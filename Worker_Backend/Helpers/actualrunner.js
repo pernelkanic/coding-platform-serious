@@ -1,6 +1,7 @@
 
-import { exec } from "child_process";
+import { execSync } from "child_process";
 import { promises as fs } from "fs";
+import nodeCmd from 'node-cmd';
 import { v4 as uuid } from "uuid";
 class ActualRunner{
     constructor(){
@@ -15,12 +16,12 @@ class ActualRunner{
 			},
 			cpp: {
 				dockerImage: 'gcc:9.2.0',
-				command: (filename , input) =>
+				command: (filename) =>
 					`g++ ${filename} -o output && { ./output < testcase.txt; exitcode=$?; } || exitcode=$?; rm -f ${filename} output; exit $exitcode`
 			},
 			java: {
 				dockerImage: 'openjdk:11',
-				command: (filename ) => {
+				command: (filename) => {
 					const className = filename.split('.').slice(0, -1).join('.')
 					return `javac ${filename} && java ${className}`
 				}
@@ -30,7 +31,7 @@ class ActualRunner{
     }
     getLangDetails(language){
         const details = this.LANGUAGES[language];
-        console.log("the details of the image is " , details.dockerImage);
+        
         if(!details){
             throw new Error("Unsupported Error");
         }
@@ -38,7 +39,7 @@ class ActualRunner{
     }
     execCommand(dockerCommand){
         return new Promise((resolve, reject)=>{
-            exec(dockerCommand , (error , stdout , stderr)=>{
+            nodeCmd.run(dockerCommand , (error , stdout , stderr)=>{ //node cmd is in case of windows have to change it to exec for bash 
                 if(error){
                     reject({
                         error:error.message,
@@ -48,16 +49,22 @@ class ActualRunner{
                     return 
                 }
                 resolve({stdout , stderr});
+                
             })
         })
     }
     async  runnerCode(code , language){
+        console.log(code);
         const {dockerImage, command} = this.getLangDetails(language);
         const filename = `${uuid()}.${language}`
         try{
             await fs.writeFile(filename, code);
             
-            const dockerCommand = `docker run  -v  cd:/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}" `;
+
+            let currentDir = execSync('cd').toString().trim();
+            currentDir = currentDir.replaceAll(" " , "\\")
+            
+            const dockerCommand = `docker run  -v "%cd%":/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}" `;//
           
             const{stdout, stderr} = await this.execCommand(dockerCommand);
             return {stdout, stderr};
