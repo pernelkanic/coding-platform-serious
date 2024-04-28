@@ -1,9 +1,10 @@
 
 import dotenv from 'dotenv';
+import ActualRunner from './Helpers/actualrunner.js';
 import rabbit from './Helpers/rabbit.js';
 import redisClient from './Helpers/redis.js';
 dotenv.config();
-
+const runner = new ActualRunner();
 const workerRun = async()=>{
     try{
         console.log("the worker is on");
@@ -18,13 +19,14 @@ const workerRun = async()=>{
                     return;
                 }
                 const{id , code , language}= message;
+                const {stdout , stderr} = await runner.runcode(id , code ,language);
+                const result = stdout? stdout : stderr;
                 const output = {
-					
+                    result,
 					status: 'completed'
 				}
 			
 				await redisClient.set(id, JSON.stringify(output));
-                
             }
             catch(e){
                 console.log("the error occured in the queue section" , e);
