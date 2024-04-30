@@ -9,6 +9,7 @@ import {
 import App from './App.jsx';
 import AboutContainer from './Components/AboutComponents/AboutContainer.jsx';
 import ProblemContainer from './Components/ProblemComponents/ProblemContainer.jsx';
+import ProblemPage from "./Components/ProblemComponents/ProblemPage.jsx";
 import SignInContainer from "./Components/SignInContainer.jsx";
 import './index.css';
 
@@ -29,11 +30,12 @@ const router = createBrowserRouter([
     element: <ProblemContainer/>,
   },
   { path: "/login", element: <SignInContainer/>},
+  { path: "/problems/:id", element: <ProblemPage/>}
 ]);
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+ 
       <ClerkProvider publishableKey={publishableKey}>
        <RouterProvider router={router} />
        </ClerkProvider>
-  </React.StrictMode>,
+  
 )
