@@ -13,13 +13,23 @@ export async function userValidation(req, res, next){
     const actualtoken = authorization.split(' ')[1];
     const JWKS = jose.createRemoteJWKSet(new URL(`${process.env.CLERK_PEM_URL}`))
     try{
-        const data = jose.jwtVerify(actualtoken, JWKS);
+        const data = await jose.jwtVerify(actualtoken, JWKS,(err,userId)=>{
+            if(err){
+                 res.status(400).json({
+                    error:"This is not a valid token",
+                    
+                })
+            }
+            
+        });
+       if(data.then){
         next();
     }
+    }
     catch(e){
-        res.status(400).json({
+        return res.status(400).json({
             error:"This is not a valid token",
-            message:e
+            
         })
         return;
     }
