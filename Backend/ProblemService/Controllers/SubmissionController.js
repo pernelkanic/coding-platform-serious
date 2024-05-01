@@ -16,6 +16,7 @@ export const runCode= async(req,res)=>{
             success :false,
             message:"unsupported language"
         })
+        return;
     }
     const id = uuid();
     const data = {

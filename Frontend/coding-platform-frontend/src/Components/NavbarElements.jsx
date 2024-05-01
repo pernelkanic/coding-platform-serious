@@ -7,7 +7,7 @@ export default function NavbarElements({setlogout}){
     const { signOut } = useClerk();
 
     const elements= [
-        {
+        {   
             index: 1,
             namelink: "About",
             source:"/about"

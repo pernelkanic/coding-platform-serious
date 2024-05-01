@@ -8,13 +8,13 @@ import "ace-builds/src-noconflict/theme-monokai";
 import React, { useEffect, useState } from 'react';
 import AceEditor from 'react-ace';
 import LanguageDropdown from "./LanguageDropdown";
-export default function CodeEditor() {
+export default function CodeEditor({setruncode , setlanguage}) {
 
 const[code , setCode ] = useState(null);
 const[language, setLanguage] = useState("");
 const onSelectChange = (sl) => {
         setLanguage(sl);
-          
+        setlanguage(sl)
   }; 
   useEffect(
     ()=>{
@@ -25,7 +25,9 @@ const onSelectChange = (sl) => {
     <>
     <div className=' flex  flex-col justify-center mt-10 mb-10'>
         
-     <LanguageDropdown onSelectChange =  {onSelectChange} />
+     <LanguageDropdown onSelectChange =  {onSelectChange}
+        
+     />
     <AceEditor
         height="600px"
         width='1000px'
@@ -39,9 +41,12 @@ const onSelectChange = (sl) => {
             showLineNumbers: true,
             tabSize: 2,
             }}
-            onChange={(e)=>setCode(e)}
+            onChange={(e)=>{
+              setruncode(e)
+              setCode(e)}}
             />
             </div>
+           
        
             </>
 
