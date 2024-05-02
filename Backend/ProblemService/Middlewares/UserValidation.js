@@ -22,9 +22,9 @@ export async function userValidation(req, res, next){
             }
             
         });
-       if(data.then){
+       
         next();
-    }
+   
     }
     catch(e){
         return res.status(400).json({

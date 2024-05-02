@@ -23,13 +23,20 @@ const workerRun = async()=>{
                 const {stdout , stderr} = await runner.runnerCode(code ,language);
                 const result = stdout? stdout : stderr;
                 console.log(stdout);
-                console.log(stderr);
+                if(result === stderr ){
                 const output = {
                     result,
-					status: 'completed'
+					status: 'rejected'
 				}
-			
-				await redisClient.set(id, JSON.stringify(output).replace("\\" ,""));
+                await redisClient.set(id, JSON.stringify(output));
+                return;
+            }
+                
+			const output = {
+                result,
+                status: 'accepted'
+            }
+				await redisClient.set(id, JSON.stringify(output));
             }
             catch(e){
                 console.log("the error occured in the queue section" , e);

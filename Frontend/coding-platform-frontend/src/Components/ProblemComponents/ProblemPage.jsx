@@ -72,13 +72,23 @@ export default function ProblemPage() {
            })
            const data = await response.json();
             console.log(data);
+            setdata(data);
+            
         }catch(e){
             console.error('Error:', error);
         }
         
+        try{
+            await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
+            .then()
+        }
+        catch(e){
+            throw new Error("the code execution failed!")
+        }
     }
     //handle submission code
  async   function handleSubmit(){
+
 
     }
   return (
