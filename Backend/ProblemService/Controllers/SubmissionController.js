@@ -47,6 +47,7 @@ export const runCode= async(req,res)=>{
     
 
 }
+
 catch(e){
     console.log(e);
     res.status(500).json({
@@ -54,6 +55,20 @@ catch(e){
         message:e,
     })
 }
+}
+export const submitCode =  async(req, res)=>{
+    try{
+        const{userId , code , language , problemId} = req.params;
+        const submissioncreate  = await newsub.create({userId,code,language, problemId});
+        res.status(200).json(submissioncreate);
+
+
+
+
+    }
+    catch(e){
+        throw new Error("error failed when submitting backend")
+    }
 }
 export const getSubmissionById = async(req,res)=>{
 try{

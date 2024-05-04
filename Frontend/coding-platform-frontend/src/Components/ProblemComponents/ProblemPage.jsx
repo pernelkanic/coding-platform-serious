@@ -80,7 +80,10 @@ export default function ProblemPage() {
         
         try{
             await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
-            .then()
+            .then((response) => response.json())
+            .then((data)=>{
+                setdata(data)
+            })
         }
         catch(e){
             throw new Error("the code execution failed!")
@@ -88,7 +91,53 @@ export default function ProblemPage() {
     }
     //handle submission code
  async   function handleSubmit(){
+    e.preventDefault();
 
+       
+    const lang = mapformat[`${runlang}`];
+    const bodyforrun={
+        "code":`${runcode}`,
+        "language":`${lang}`
+    }
+
+    
+    try{
+
+    const response = await fetch('http://localhost:5001/api/code/submissions', {
+        method: 'post',
+        headers: {
+            'Content-Type':'application/json',
+            'Authorization':`Bearer ${await getToken()}`
+        },
+        body: JSON.stringify(bodyforrun)
+       })
+       const data = await response.json();
+        console.log(data);
+        setdata(data);
+        
+    }catch(e){
+        console.error('Error:', error);
+    }
+    
+    try{
+        await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
+        .then((response) => response.json())
+        .then((data)=>{
+            setdata(data)
+        })
+        if(data.status === 'accepted'){
+            //handle submission code here
+            try{
+
+            }
+            catch(e){
+                console.log("The error occured when saving to db");
+            }
+        }
+    }
+    catch(e){
+        throw new Error("the code execution at submission failed!")
+    }
 
     }
   return (
