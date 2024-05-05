@@ -15,12 +15,14 @@ export default function ProblemPage() {
         "c++":"cpp",
         
     }
+    const title = useParams().prob.substring(2,useParams().prob.lastIndexOf("$"))
+    let probid = useParams().prob.substring(useParams().prob.lastIndexOf("$") , );
 
-
+    
     const[runcode, setruncode] = useState("");
     const[runlang , setrunlang] = useState("");
+    const[queid, setqueid] = useState(null);
     const[data, setdata] = useState(null);
-    const[title , settitle] = useState(useParams().id.substring(2,));
     const [probdata , setprobdata] = useState([]);
     const[loading, setLoading] = useState(false);
     const { userId, isLoaded } = useAuth()
@@ -31,7 +33,7 @@ export default function ProblemPage() {
         }
     }, [isLoaded])
     
-    
+ 
     
 
     useEffect(
@@ -69,77 +71,81 @@ export default function ProblemPage() {
                 'Authorization':`Bearer ${await getToken()}`
             },
             body: JSON.stringify(bodyforrun)
-           })
-           const data = await response.json();
-            console.log(data);
-            setdata(data);
+           });
+           if (response.ok) {
+            await response.json().then(data => setqueid(data.requestId));
+            
+             pollForResult();
+          } else {
+            console.error('Failed to execute code');
+          }
+         
             
         }catch(e){
-            console.error('Error:', error);
+            console.log('Error:', e);
         }
         
+        
+    }
+    const pollForResult = async () => {
         try{
-            await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
-            .then((response) => response.json())
-            .then((data)=>{
-                setdata(data)
-            })
-        }
-        catch(e){
-            throw new Error("the code execution failed!")
-        }
-    }
-    //handle submission code
- async   function handleSubmit(){
-    e.preventDefault();
+            const res = await fetch(`http://localhost:5001/api/code/submissions/${queid}`)
+            .then(response => response.json())
+           
+              
+                if(res){
+                    console.log(res);
+                    setdata(res);
 
-       
-    const lang = mapformat[`${runlang}`];
-    const bodyforrun={
-        "code":`${runcode}`,
-        "language":`${lang}`
-    }
+                }else{
+                    pollForResult();
 
-    
-    try{
-
-    const response = await fetch('http://localhost:5001/api/code/submissions', {
-        method: 'post',
-        headers: {
-            'Content-Type':'application/json',
-            'Authorization':`Bearer ${await getToken()}`
-        },
-        body: JSON.stringify(bodyforrun)
-       })
-       const data = await response.json();
-        console.log(data);
-        setdata(data);
+                }
+            }
         
-    }catch(e){
-        console.error('Error:', error);
-    }
-    
-    try{
-        await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
-        .then((response) => response.json())
-        .then((data)=>{
-            setdata(data)
-        })
-        if(data.status === 'accepted'){
-            //handle submission code here
-            try{
-
-            }
-            catch(e){
-                console.log("The error occured when saving to db");
-            }
+        catch(e){
+            throw new Error("the code execution failed!" + e)
         }
     }
-    catch(e){
-        throw new Error("the code execution at submission failed!")
-    }
+   
+    //handle submission code
+//  async   function handleSubmit(){
+//     try{
+//         await fetch(`http://localhost:5001/api/code/submissions/${data.requestId}`)
+//         .then((response) => response.json())
+//         .then((data)=>{
+//             setdata(data)
+//         })
+//         if(data.status === 'accepted'){
+//             //handle submission code here
+//             try{
+//                 await fetch('http://localhost:5001/api/code/submit', {
+//                 method: 'post',
+//                 headers: {
+//                     'Content-Type':'application/json',
+//                     'Authorization':`Bearer ${await getToken()}`
+//                 },
+//                 body: JSON.stringify({
+//                     code:runcode,
+//                     language :runlang,
+//                     userId:userid,
+//                     problemId: probid
+//                 })
+//        })
+//        const data = await response.json();
+//         console.log(data);
+//         setdata(data);
+//             }
+//             catch(e){
+//                 console.log("The error occured when saving to db");
+//             }
+//         }
+//     }
+//     catch(e){
+//         throw new Error("the code execution at submission failed!")
+//     }
 
-    }
+//     }
   return (
     <>
         {!loading?(
@@ -164,7 +170,7 @@ export default function ProblemPage() {
                     />
                     <div className='flex gap-20 justify-end'>
                     <button className=' bg-slate-900 text-white p-3 rounded-md' onClick={handleRun}>Run</button>
-                    <button className='bg-slate-900 text-white p-3 rounded-md' onClick={handleSubmit}>Submit</button>
+                    <button className='bg-slate-900 text-white p-3 rounded-md' >Submit</button>
                     </div>
                     </div>
                     
@@ -172,7 +178,7 @@ export default function ProblemPage() {
                     
                   </div>
                 )
-            }
+                }
             
             
             })

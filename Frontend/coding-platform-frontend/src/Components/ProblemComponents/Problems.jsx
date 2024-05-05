@@ -25,7 +25,7 @@ export default function Problems() {
         return( 
         <>
         <div key={index}>
-            <Link to = {`/problems/${index+ "$" + item.title}`}>
+            <Link to = {`/problems/${index+"$"+ item.title +"$"+item._id}`}>
             <button>{item.title.toUpperCase()}</button>
             </Link>
             </div>

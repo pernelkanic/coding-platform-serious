@@ -30,7 +30,7 @@ const router = createBrowserRouter([
     element: <ProblemContainer/>,
   },
   { path: "/login", element: <SignInContainer/>},
-  { path: "/problems/:id", element: <ProblemPage/>}
+  { path: "/problems/:prob", element: <ProblemPage/>}
 ]);
 ReactDOM.createRoot(document.getElementById('root')).render(
  
