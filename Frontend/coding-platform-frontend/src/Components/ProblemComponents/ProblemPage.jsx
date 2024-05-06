@@ -2,10 +2,11 @@ import { useAuth } from '@clerk/clerk-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-
+import { encode } from 'base-64';
 import CodeEditor from './CodeEditor';
 
 export default function ProblemPage() {
+    var useridtomongo = "6627e2cb20de2d1628a0416f"
     const { getToken } = useAuth();
 
     const mapformat ={
@@ -49,8 +50,26 @@ export default function ProblemPage() {
         }
         ,[]
     )
-//code for running the code in the worker
 
+    //for getting the data from the redis
+    useEffect(()=>{
+        async function polling(){
+        // This effect runs whenever queid changes
+        console.log(queid); // This will print the updated value of queid
+        await pollForResult();
+    }
+    polling();
+}, [queid]);
+
+//for saving into the db
+useEffect(()=>{
+    async function  saving(){
+    saveToDB()
+}
+saving();
+}, [data]);
+   
+//code for running the code in the worker
   const  handleRun =async (e)=>{
     e.preventDefault();
 
@@ -73,10 +92,8 @@ export default function ProblemPage() {
             body: JSON.stringify(bodyforrun)
            });
            if (response.ok) {
-            await response.json().then(data => setqueid(data.requestId));
-            
-             pollForResult();
-          } else {
+            await response.json().then(data =>  setqueid(data.requestId));
+           } else {
             console.error('Failed to execute code');
           }
          
@@ -87,18 +104,39 @@ export default function ProblemPage() {
         
         
     }
+    const saveToDB = async() =>{
+        try{
+        await fetch('http://localhost:5001/api/code/submit', {
+                            method: 'post',
+                            headers: {
+                                'Content-Type':'application/json',
+                                'Authorization':`Bearer ${await getToken()}`
+                            },
+                            body: JSON.stringify({
+                                code:runcode,
+                                language :runlang,
+                                userId: encode(useridtomongo),
+                                problemId: encode(probid)
+                            })
+                   })
+                }
+                catch(e){
+                    throw new Error("the error occured when saving to DB")
+                }
+    }
     const pollForResult = async () => {
         try{
             const res = await fetch(`http://localhost:5001/api/code/submissions/${queid}`)
             .then(response => response.json())
            
-              
-                if(res){
-                    console.log(res);
+             const statusforreq = JSON.parse(res.message).status
+             console.log(statusforreq);
+                if(statusforreq === 'accepted'){
                     setdata(res);
-
+                    
                 }else{
-                    pollForResult();
+                    
+                    pollForResult(queid);
 
                 }
             }

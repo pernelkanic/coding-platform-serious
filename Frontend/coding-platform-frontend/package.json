@@ -13,6 +13,7 @@
     "@clerk/clerk-react": "^5.0.0",
     "@clerk/nextjs": "^5.0.1",
     "ace-builds": "^1.33.1",
+    "base-64": "^1.0.0",
     "dotenv": "^16.4.5",
     "react": "^18.2.0",
     "react-ace": "^11.0.1",
