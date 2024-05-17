@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "amqplib": "^0.10.4",
+    "black": "^0.3.0",
     "child_process": "^1.0.2",
     "dotenv": "^16.4.5",
     "events": "^3.3.0",
@@ -18,5 +19,8 @@
     "node-cmd": "^5.0.0",
     "redis": "^4.6.13",
     "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "prettier": "3.2.5"
   }
 }

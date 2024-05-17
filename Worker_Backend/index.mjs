@@ -3,8 +3,10 @@ import dotenv from 'dotenv';
 import ActualRunner from './Helpers/actualrunner.js';
 import rabbit from './Helpers/rabbit.js';
 import redisClient from './Helpers/redis.js';
+
 dotenv.config();
 const runner = new ActualRunner();
+
 const workerRun = async()=>{
     try{
         console.log("the worker is on");
@@ -21,13 +23,24 @@ const workerRun = async()=>{
                 }
                 const{id , code , language}= message;
                 const {stdout , stderr} = await runner.runnerCode(code ,language);
+                
                 const result = stdout? stdout : stderr;
+
                 console.log(stdout);
+                
                 if(result === stderr ){
                 const output = {
                     result,
 					status: 'rejected'
 				}
+            }
+                if(result === stdout ){
+                    const output = {
+                        Actual : result,
+                  
+                        status: 'accepted'
+                    } 
+                
                 await redisClient.set(id, JSON.stringify(output));
                 return;
             }

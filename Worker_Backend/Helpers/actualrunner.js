@@ -8,22 +8,22 @@ class ActualRunner{
         this.LANGUAGES={
             py: {
 				dockerImage: 'python:3.9-slim',
-				command: (filename) => `python ${filename}; rm ${filename}`
+				command: (filename) => `python ${filename} < tc.txt`
 			},
 			js: {
 				dockerImage: 'node:14-alpine',
-				command: (filename) => `node ${filename}; rm ${filename}`
+				command: (filename) => `node ${filename} < tc.txt; rm ${filename}`
 			},
 			cpp: {
 				dockerImage: 'gcc:9.2.0',
 				command: (filename) =>
-					`g++ ${filename} -o output && { ./output < testcase.txt; exitcode=$?; } || exitcode=$?; rm -f ${filename} output; exit $exitcode`
+                        `g++ ${filename} -o output && { ./output < tc.txt; exitcode=$?; } || exitcode=$?; rm -f ${filename} output; exit $exitcode`
 			},
 			java: {
 				dockerImage: 'openjdk:11',
 				command: (filename) => {
 					const className = filename.split('.').slice(0, -1).join('.')
-					return `javac ${filename} && java ${className}`
+					return `javac ${filename} && java ${className} < tc.txt`
 				}
 			}
 		}
@@ -54,21 +54,31 @@ class ActualRunner{
         })
     }
     async  runnerCode(code , language){
-        console.log(code);
+        
         const {dockerImage, command} = this.getLangDetails(language);
         const filename = `${uuid()}.${language}`
         try{
+
+            // await fs.writeFile(filename, code);
+            // let data = await fs.readFile(filename, 'utf8');
+            // data = data.replace(/\n/g, '');
             await fs.writeFile(filename, code);
             
-
-            let currentDir = execSync('cd').toString().trim();
-            currentDir = currentDir.replaceAll(" " , "\\")
+           
+               
             
-            const dockerCommand = `docker run  -v "%cd%":/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}" `;//
-          
-            const{stdout, stderr} = await this.execCommand(dockerCommand);
-            return {stdout, stderr};
-
+              
+                
+                let currentDir = execSync('cd').toString().trim();
+                currentDir = currentDir.replaceAll(" " , "\\")
+                
+                const dockerCommand = `docker run  -v "%cd%":/usr/src/app -w /usr/src/app ${dockerImage} /bin/sh -c "${command(filename)}"`;
+              
+                
+              
+            
+              const{stdout, stderr} = await this.execCommand(dockerCommand);
+                return {stdout, stderr};
         }catch(e){
             console.log(e);
             return e;
