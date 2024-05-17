@@ -6,7 +6,7 @@ const router = express.Router();
 //for run code
 router.post('/submissions' ,userValidation,codeValidation(), validate,  runCode );
 //for submit 
-router.post('/submit' ,  codeValidation(), validate, submitCode );
+router.post('/submit' , userValidation, codeValidation(), validate, submitCode );
 router.get('/submissions/:id' ,  getSubmissionById);
 // router.post('/submission/save' ,saveSubmission );
 

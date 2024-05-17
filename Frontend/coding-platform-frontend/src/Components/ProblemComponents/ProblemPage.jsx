@@ -2,7 +2,6 @@ import { useAuth } from '@clerk/clerk-react';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { encode } from 'base-64';
 import CodeEditor from './CodeEditor';
 
 export default function ProblemPage() {
@@ -17,7 +16,7 @@ export default function ProblemPage() {
         
     }
     const title = useParams().prob.substring(2,useParams().prob.lastIndexOf("$"))
-    let probid = useParams().prob.substring(useParams().prob.lastIndexOf("$") , );
+    let probid = useParams().prob.substring(useParams().prob.lastIndexOf("$") + 1 , );
 
     
     const[runcode, setruncode] = useState("");
@@ -115,8 +114,8 @@ saving();
                             body: JSON.stringify({
                                 code:runcode,
                                 language :runlang,
-                                userId: encode(useridtomongo),
-                                problemId: encode(probid)
+                                userId: useridtomongo,
+                                problemId: probid
                             })
                    })
                 }

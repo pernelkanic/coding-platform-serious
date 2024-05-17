@@ -1,7 +1,7 @@
-import { ObjectId } from 'mongodb';
 import { v4 as uuid } from 'uuid';
 import rabbit from '../Helpers/rabbit.js';
 import redisClient from '../Helpers/redis.js';
+import submission from '../Models/submissions.js';
 export const runCode= async(req,res)=>{
     try{
     const {code , language} = req.body;
@@ -27,7 +27,7 @@ export const runCode= async(req,res)=>{
     }
     await rabbit.sendToQueue('codequeue' , data);
    
-    console.log("sent to the queue chill mf!!");
+    console.log("sent to the queue ");
  
     const respforredis = {
         status :'pending',
@@ -62,14 +62,11 @@ export const submitCode =  async(req, res)=>{
     try{
         const{userId , code , language , problemId } = req.body;
       
-        const problemid  =   ObjectId.createFromBase64(problemId);
-        const userid =  ObjectId.createFromBase64(userId)
-        console.log(userid);
-        // const submissioncreate  = await submission.create({ 
-        //     problemId:problemid ,
-        //     userId:userid
-        //     ,code
-        //     ,language });
+        const submissioncreate  = await submission.create({ 
+            problemId:problemId ,
+            userId:userId
+            ,code
+            ,language });
         
         res.status(200).json("done");
 }   
@@ -92,19 +89,18 @@ try{
         return response;
     };
 
-    const timeout = 30000; // Timeout in milliseconds (adjust as needed)
+    const timeout = 30000;
     const startTime = Date.now();
 
-    // Loop until the condition is met or timeout occurs
     while (true) {
         const response = await checkCondition();
         console.log(JSON.parse(response.message).status)
-        // Check if the condition is met
+       
         if ( JSON.parse(response.message).status === 'accepted' || JSON.parse(response.message).status === 'rejected'  ) {
             return res.status(200).json(response);
         }
 
-        // Check if timeout has occurred
+     
         if (Date.now() - startTime >= timeout) {
             return res.status(200).json({
                 success: false,
@@ -112,7 +108,7 @@ try{
             });
         }
 
-        // Wait for a short interval before checking again
+       
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 }
