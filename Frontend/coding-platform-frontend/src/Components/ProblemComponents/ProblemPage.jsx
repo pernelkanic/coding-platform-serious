@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import CodeEditor from './CodeEditor';
+import ResultComponent from './ResultComponent';
 
 export default function ProblemPage() {
     var useridtomongo = "6627e2cb20de2d1628a0416f"
@@ -21,6 +22,7 @@ export default function ProblemPage() {
     
     const[runcode, setruncode] = useState("");
     const[runlang , setrunlang] = useState("");
+    const[status, setstatus ] = useState("not yet run");
     const[queid, setqueid] = useState(null);
     const[data, setdata] = useState(null);
     const [probdata , setprobdata] = useState([]);
@@ -75,10 +77,10 @@ saving();
        
         const lang = mapformat[`${runlang}`];
         const bodyforrun={
-            "code":`${runcode}`,
+            "code":`${runcode.trim()}`,
             "language":`${lang}`
         }
-    
+        
         
         try{
 
@@ -103,6 +105,9 @@ saving();
         
         
     }
+
+
+
     const saveToDB = async() =>{
         try{
         await fetch('http://localhost:5001/api/code/submit', {
@@ -123,18 +128,29 @@ saving();
                     throw new Error("the error occured when saving to DB")
                 }
     }
+
+
+
+
     const pollForResult = async () => {
         try{
             const res = await fetch(`http://localhost:5001/api/code/submissions/${queid}`)
             .then(response => response.json())
            
              const statusforreq = JSON.parse(res.message).status
-             console.log(statusforreq);
+
+            const dataforreq = JSON.parse(res.message); 
+          
                 if(statusforreq === 'accepted'){
-                    setdata(res);
-                    
+                    setdata(dataforreq);
+                    setstatus("accepted");
+                  
+                }
+                else if(statusforreq === 'rejected'){
+                    setdata(dataforreq);
+                    setstatus("rejected");
                 }else{
-                    
+                    setstatus("pending");
                     pollForResult(queid);
 
                 }
@@ -210,7 +226,19 @@ saving();
                     <button className='bg-slate-900 text-white p-3 rounded-md' >Submit</button>
                     </div>
                     </div>
-                    
+                    {
+                    data != null ? (
+                    <div>
+
+                        <ResultComponent
+                        status={status}
+                        data= {data}
+                        />
+                    </div>
+                    ):(
+                       <></>
+                    )
+                }
                     
                     
                   </div>

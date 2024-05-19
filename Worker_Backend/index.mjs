@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import ActualRunner from './Helpers/actualrunner.js';
 import rabbit from './Helpers/rabbit.js';
 import redisClient from './Helpers/redis.js';
+import tcs from './testcase.mjs';
 
 dotenv.config();
 const runner = new ActualRunner();
@@ -22,37 +23,31 @@ const workerRun = async()=>{
                     return;
                 }
                 const{id , code , language}= message;
-                const {stdout , stderr} = await runner.runnerCode(code ,language);
+                const {stdout , stderr} = await runner.runnerCode(code ,language, id);
                 
                 const result = stdout? stdout : stderr;
 
                 console.log(stdout);
                 
-                if(result === stderr ){
                 const output = {
-                    result,
-					status: 'rejected'
-				}
-            }
-                if(result === stdout ){
-                    const output = {
-                        Actual : result,
-                  
-                        status: 'accepted'
-                    } 
+                    status: "accepted",
+                    Actual: result,
+                    Expected:tcs.output
+                }
+               await redisClient.set(id, JSON.stringify(output));
+          
+            
                 
-                await redisClient.set(id, JSON.stringify(output));
-                return;
-            }
-                
-			const output = {
-                result,
-                status: 'accepted'
-            }
-				await redisClient.set(id, JSON.stringify(output));
+			
+			
             }
             catch(e){
-                console.log("the error occured in the queue section" , e);
+                const{id , code , language}= message;
+                const output = {
+                    status: "rejected",
+                    message: e
+                }
+                await redisClient.set(id, JSON.stringify(output));
             }
           
         } ,  { noAck: false })

@@ -8,7 +8,7 @@ class ActualRunner{
         this.LANGUAGES={
             py: {
 				dockerImage: 'python:3.9-slim',
-				command: (filename) => `python ${filename} < tc.txt`
+				command: (filename) => `python ${filename} < tc.txt ;`
 			},
 			js: {
 				dockerImage: 'node:14-alpine',
@@ -53,10 +53,13 @@ class ActualRunner{
             })
         })
     }
-    async  runnerCode(code , language){
+    async  runnerCode(code , language , id){
         
         const {dockerImage, command} = this.getLangDetails(language);
-        const filename = `${uuid()}.${language}`
+        let filename = `${uuid()}.${language}`
+        if(language == 'java'){
+            filename = `Main.${language}`
+        }
         try{
 
             // await fs.writeFile(filename, code);
@@ -78,10 +81,12 @@ class ActualRunner{
               
             
               const{stdout, stderr} = await this.execCommand(dockerCommand);
+          
                 return {stdout, stderr};
         }catch(e){
-            console.log(e);
-            return e;
+           throw e;
+
+           
         }
     }
 }
