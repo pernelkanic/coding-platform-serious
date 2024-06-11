@@ -4,6 +4,7 @@ import ActualRunner from './Helpers/actualrunner.js';
 import rabbit from './Helpers/rabbit.js';
 import redisClient from './Helpers/redis.js';
 import tcs from './testcase.mjs';
+import { readFileSync } from 'fs';
 
 dotenv.config();
 const runner = new ActualRunner();
@@ -26,28 +27,44 @@ const workerRun = async()=>{
                 const {stdout , stderr} = await runner.runnerCode(code ,language, id);
                 
                 const result = stdout? stdout : stderr;
+                let output = readFileSync('./output.txt', 'utf8');
+               
+                const normalize = (str) => str.replace(/\r\n/g, '\n').trim();
 
-                console.log(stdout);
-                
-                const output = {
-                    status: "accepted",
-                    Actual: result,
-                    Expected:tcs.output
+                const normalizedResult = normalize(result);
+                const normalizedOutput = normalize(output);
+                  console.log(typeof(result))
+                  if(normalizedResult === normalizedOutput){
+                      const outputres ={
+                      status:"accepted",
+                      Actual:result,
+                      Expected:output
+                  }
+                  
+                    await redisClient.set(id, JSON.stringify(outputres));
+                    return;
                 }
-               await redisClient.set(id, JSON.stringify(output));
-          
+
+              
+              else if(normalizedResult != normalizedOutput){ 
+                const outputerr = {
+                    status: "rejected",
+                    Actual: result,
+                    Expected: output
+                }
+               await redisClient.set(id, JSON.stringify(outputerr));
+               return;
+            }
             
-                
-			
-			
             }
             catch(e){
                 const{id , code , language}= message;
                 const output = {
-                    status: "rejected",
+                    status: "Error",
                     message: e
                 }
                 await redisClient.set(id, JSON.stringify(output));
+                return;
             }
           
         } ,  { noAck: false })

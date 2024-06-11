@@ -24,7 +24,7 @@ export default function ProblemPage() {
     const[runlang , setrunlang] = useState("");
     const[status, setstatus ] = useState("not yet run");
     const[queid, setqueid] = useState(null);
-    const[data, setdata] = useState(null);
+    const[data, setdata] = useState({});
     const [probdata , setprobdata] = useState([]);
     const[loading, setLoading] = useState(false);
     const { userId, isLoaded } = useAuth()
@@ -136,11 +136,14 @@ saving();
         try{
             const res = await fetch(`http://localhost:5001/api/code/submissions/${queid}`)
             .then(response => response.json())
+            let statusforreq ="";
+            
+            res.success === true ? statusforreq = JSON.parse(res.message).status : statusforreq =JSON.parse(res.message.message).status 
+            console.log(statusforreq);
+            let dataforreq = "";
            
-             const statusforreq = JSON.parse(res.message).status
-
-            const dataforreq = JSON.parse(res.message); 
-          
+            if(statusforreq !== 'Error') dataforreq  = JSON.parse(res.message); 
+            console.log(dataforreq);
                 if(statusforreq === 'accepted'){
                     setdata(dataforreq);
                     setstatus("accepted");
@@ -149,7 +152,16 @@ saving();
                 else if(statusforreq === 'rejected'){
                     setdata(dataforreq);
                     setstatus("rejected");
-                }else{
+                }
+                else if(statusforreq === 'Error'){
+                    console.log("im in error");
+                    console.log(JSON.parse(res.message.message).message);
+                    let dataforerror  = JSON.parse(res.message.message);
+                    setdata(dataforerror);
+                    setstatus("Error");
+                }
+                    
+                else{
                     setstatus("pending");
                     pollForResult(queid);
 

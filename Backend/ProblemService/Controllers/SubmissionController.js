@@ -82,39 +82,64 @@ try{
     const {id}  = req.params;
     const checkCondition = async () => {
         const result = await redisClient.get(id);
-        const response = {
+        let response = {};
+
+         response = {
             success: true,
             message: result
-        };
+        }
         return response;
     };
 
     const timeout = 30000;
     const startTime = Date.now();
-
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+    let flag = true;
     while (true) {
         const response = await checkCondition();
-        console.log(JSON.parse(response.message).status)
+        const parsedMessage = JSON.parse(response.message);
+        const status = parsedMessage.status;
        
-        if ( JSON.parse(response.message).status === 'accepted' || JSON.parse(response.message).status === 'rejected'  ) {
-            return res.status(200).json(response);
+        console.log(status);
+        
+        if (status === 'accepted' || status === 'rejected' ) {
+             res.status(200).json(response);
+            return;
+            
+        } 
+        else if(status === 'Error'){
+            
+            res.status(200).json(
+                {
+                    
+                        success: false,
+                        message: response
+                    
+                }
+            );
+           
+            break;
         }
+        
 
-     
         if (Date.now() - startTime >= timeout) {
-            return res.status(200).json({
+           return res.status(200).json({
                 success: false,
                 message: "Timeout exceeded"
             });
+          
+           
         }
 
-       
         await new Promise(resolve => setTimeout(resolve, 1000));
     }
 }
 catch(e){
-    console.log(e);
-    res.status(500).json({
+    
+   return res.status(200).json({
         success:false,
         message:`${e}`
     })
